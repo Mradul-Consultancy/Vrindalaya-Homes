@@ -22,6 +22,6 @@ ENV PYTHONUNBUFFERED=1
 # Expose Django development server port (override in production)
 EXPOSE 8000
 
-# Default command runs the development server (replace with gunicorn in prod)
-CMD ["uv", "run", "python", "backend/manage.py", "runserver", "0.0.0.0:8000"]
+# Production command running Gunicorn
+CMD ["sh", "-c", "uv run python backend/manage.py migrate --noinput && uv run python backend/manage.py collectstatic --noinput && uv run gunicorn --chdir backend backend.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 3 --timeout 120"]
 
