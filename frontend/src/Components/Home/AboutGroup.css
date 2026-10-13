@@ -45,7 +45,7 @@
     overflow: hidden;
     height: 100%;
     width: 50%;
-    background-image: url('../../assets/back3.png');
+    background-image: url('../../assets/Back3.webp');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -75,7 +75,7 @@
     .AboutGroupDiv>.right{
         height: 80%;
         width: 100%;
-        background-image: url('../../assets/back1.png');
+        background-image: url('../../assets/Back1.webp');
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;

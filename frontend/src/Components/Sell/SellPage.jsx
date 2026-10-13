@@ -1,35 +1,40 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../utils/api';
 import './SellPage.css';
+
+const emptyForm = () => ({
+    title: '',
+    property_type: '',
+    size_sqft: '',
+    bedrooms: '',
+    bathrooms: '',
+    furnishing_status: '',
+    price: '',
+    city: '',
+    locality: '',
+    address: '',
+    pincode: '',
+    construction_status: '',
+    age_of_property: '',
+    floor_number: '',
+    total_floors: '',
+    parking: '',
+    images: null,
+    gallery: [],
+    floor_plan: null,
+    seller_name: '',
+    seller_contact: '',
+    seller_email: '',
+    seller_type: '',
+    description: '',
+});
 
 const SellPage = () => {
     const [step, setStep] = useState(1);
-    const [formData, setFormData] = useState({
-        title: '',
-        property_type: '',
-        size_sqft: '',
-        bedrooms: '',
-        bathrooms: '',
-        furnishing_status: '',
-        price: '',
-        city: '',
-        locality: '',
-        address: '',
-        pincode: '',
-        construction_status: '',
-        age_of_property: '',
-        floor_number: '',
-        total_floors: '',
-        parking: '',
-        images: null,
-        floor_plan: null,
-        seller_name: '',
-        seller_contact: '',
-        seller_email: '',
-        seller_type: '',
-        description: ''
-    });
+    const [formData, setFormData] = useState(emptyForm);
+    const [formError, setFormError] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -38,11 +43,33 @@ const SellPage = () => {
 
     const handleFileChange = (e) => {
         const { name } = e.target;
-        const file = e.target.files[0];
-        setFormData(prev => ({ ...prev, [name]: file }));
+        const files = Array.from(e.target.files || []);
+        if (name === 'images') {
+            if (files.length > 10) {
+                setFormError('Upload no more than 10 property photos.');
+                e.target.value = '';
+                return;
+            }
+            setFormData(prev => ({ ...prev, images: files[0] || null, gallery: files.slice(1) }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: files[0] || null }));
+        }
+        setFormError('');
     };
 
     const handleNext = () => {
+        const requiredFields = {
+            1: ['title', 'property_type', 'size_sqft', 'price'],
+            2: ['city', 'locality', 'address', 'pincode'],
+            3: ['construction_status', 'age_of_property', 'floor_number', 'total_floors', 'parking'],
+            4: ['images'],
+        }[step] || [];
+        const missing = requiredFields.filter((field) => !formData[field]);
+        if (missing.length) {
+            setFormError('Please complete all required fields before continuing.');
+            return;
+        }
+        setFormError('');
         if (step < 5) setStep(step + 1);
     };
 
@@ -51,26 +78,40 @@ const SellPage = () => {
     };
 
     const handleSubmit = async () => {
+        const requiredFields = ['seller_name', 'seller_contact', 'seller_email', 'seller_type', 'description'];
+        if (requiredFields.some((field) => !formData[field])) {
+            setFormError('Please complete all required seller details.');
+            return;
+        }
         try {
             const postData = new FormData();
             Object.entries(formData).forEach(([key, value]) => {
-                if (value !== null) postData.append(key, value);
+                if (key === 'gallery') {
+                    value.forEach((file) => postData.append('gallery', file));
+                } else if (value !== null && value !== '') {
+                    postData.append(key, value);
+                }
             });
 
-            // boolean conversion for 'parking'
             postData.set('parking', formData.parking === 'Yes');
 
-            const res = await axios.post('http://localhost:8000/api/property/sell/', postData, {
+            setSubmitting(true);
+            await api.post('/property/sell/', postData, {
                 headers: {
-                    'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${localStorage.getItem('access')}`,
                 },
             });
 
-            alert('Property posted successfully!');
-            setStep(1);  // reset form
+            alert('Property submitted successfully and is awaiting review.');
+            setFormData(emptyForm());
+            setFormError('');
+            setStep(1);
         } catch (err) {
             console.error(err);
-            alert('Error submitting property: ' + (err.response?.data?.detail || err.message));
+            const detail = err.response?.data;
+            setFormError(typeof detail === 'string' ? detail : JSON.stringify(detail || err.message));
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -78,7 +119,7 @@ const SellPage = () => {
         <div className='SellPageDiv'>
             <div className="Sellnavbar">
                 <div className="Sellleft">
-                    <Link to="/" className='Selllogo'>Banke Bihari Group</Link>
+                    <Link to="/" className='Selllogo'>Vrindalaya Homes</Link>
                 </div>
                 <div className="Sellright">
                     <nav>
@@ -89,6 +130,7 @@ const SellPage = () => {
             </div>
 
             <div className="SellForm">
+                {formError && <p className="SellFormError" role="alert">{formError}</p>}
                 <div className="StatusBar">
                     {['Property Info', 'Address', 'Property Features', 'Photos', 'Review & Submit'].map((label, i) => {
                         const isActive = step === i + 1;
@@ -123,7 +165,7 @@ const SellPage = () => {
                                     </td>
                                 </tr>
                                 <tr><td className='td-1'>Size*</td>
-                                    <td><input type="text" name="size_sqft" value={formData.size_sqft} onChange={handleChange} /></td></tr>
+                                    <td><input type="number" min="0.01" step="0.01" name="size_sqft" value={formData.size_sqft} onChange={handleChange} /></td></tr>
                                 <tr><td className='td-1'>Bedrooms</td>
                                     <td><input type="number" name="bedrooms" value={formData.bedrooms} onChange={handleChange} /></td></tr>
                                 <tr><td className='td-1'>Bathrooms</td>
@@ -131,7 +173,7 @@ const SellPage = () => {
                                 <tr><td className='td-1'>Furnishing</td>
                                     <td>
                                         <select name="furnishing_status" value={formData.furnishing_status} onChange={handleChange}>
-                                            <option>Select</option>
+                                            <option value="">Select</option>
                                             <option>Furnished</option>
                                             <option>Semi-Furnished</option>
                                             <option>Unfurnished</option>
@@ -139,7 +181,7 @@ const SellPage = () => {
                                     </td>
                                 </tr>
                                 <tr><td className='td-1'>Price*</td>
-                                    <td><input type="text" name="price" value={formData.price} onChange={handleChange} /></td></tr>
+                                    <td><input type="number" min="0.01" step="0.01" name="price" value={formData.price} onChange={handleChange} /></td></tr>
                                 <tr><td></td><td><button onClick={handleNext}>Next</button></td></tr>
                             </tbody>
                         </table>
@@ -177,7 +219,7 @@ const SellPage = () => {
                                 <tr><td className='td-1'>Construction Status*</td>
                                     <td>
                                         <select name="construction_status" value={formData.construction_status} onChange={handleChange}>
-                                            <option>Select</option>
+                                            <option value="">Select</option>
                                             <option>Ready to Move</option>
                                             <option>Under Construction</option>
                                         </select>
@@ -186,7 +228,7 @@ const SellPage = () => {
                                 <tr><td className='td-1'>Age of Property*</td>
                                     <td>
                                         <select name="age_of_property" value={formData.age_of_property} onChange={handleChange}>
-                                            <option>Select</option>
+                                            <option value="">Select</option>
                                             <option>New</option>
                                             <option>Less than 5 years</option>
                                             <option>5-10 years</option>
@@ -223,8 +265,9 @@ const SellPage = () => {
                         <div className="heading-1">Upload Property Photos</div>
                         <table>
                             <tbody>
-                                <tr><td className='td-1'>Upload Images*</td><td><input type="file" name="images" onChange={handleFileChange} /></td></tr>
-                                <tr><td className='td-1'>Upload Floor Plan</td><td><input type="file" name="floor_plan" onChange={handleFileChange} /></td></tr>
+                                <tr><td className='td-1'>Upload Images*</td><td><input type="file" name="images" accept="image/*" multiple onChange={handleFileChange} /></td></tr>
+                                <tr><td colSpan="2">You can upload up to 10 property photos.</td></tr>
+                                <tr><td className='td-1'>Upload Floor Plan</td><td><input type="file" name="floor_plan" accept="image/*" onChange={handleFileChange} /></td></tr>
                                 <tr>
                                     <td></td>
                                     <td>
@@ -261,7 +304,7 @@ const SellPage = () => {
                                     <td></td>
                                     <td>
                                         <button onClick={handlePrevious}>Previous</button>
-                                        <button onClick={handleSubmit}>Submit</button>
+                                        <button onClick={handleSubmit} disabled={submitting}>{submitting ? 'Submitting...' : 'Submit'}</button>
                                     </td>
                                 </tr>
                             </tbody>

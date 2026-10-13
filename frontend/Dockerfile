@@ -1,0 +1,2 @@
+# Dockerfile for React frontend (Vite)\n\nFROM node:20-alpine AS build\n\n# Set working directory\nWORKDIR /app\n\n# Copy package files and install deps\nCOPY package.json package-lock.json ./\nRUN npm ci\n\n# Copy source and build\nCOPY . .\nRUN npm run build\n\n# Production image using nginx\nFROM nginx:stable-alpine\nCOPY --from=build /app/dist /usr/share/nginx/html\n\n# Expose port 80\nEXPOSE 80\n\nCMD ["nginx", "-g", "daemon off;"]
+

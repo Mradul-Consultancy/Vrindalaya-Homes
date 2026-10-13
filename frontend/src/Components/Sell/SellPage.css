@@ -266,7 +266,17 @@
         margin-left: 2%;
         padding: 0;
         overflow: hidden;
-        background-image: url('../../assets/SellBac3.jpg');
+        background-image: url('../../assets/SellBack3.jpg');
+}
+
+.SellFormError {
+        margin: 16px auto;
+        max-width: 900px;
+        color: #9b1c1c;
+        background: #fff0f0;
+        border: 1px solid #e5a3a3;
+        border-radius: 6px;
+        padding: 12px 16px;
         background-size: auto;
         background-position: top;
         background-repeat: no-repeat;

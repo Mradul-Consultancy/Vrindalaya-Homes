@@ -19,6 +19,9 @@ env/
 *.log
 local_settings.py
 db.sqlite3
+*.sqlite3
+realestate
+local-dev.sqlite3
 media/
 
 # Environment variables - NEVER commit these

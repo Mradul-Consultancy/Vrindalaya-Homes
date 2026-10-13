@@ -1,4 +1,13 @@
+from django.conf import settings
 from django.db import models
+
+
+LISTING_STATUS = [
+    ('Under Review', 'Under Review'),
+    ('Active', 'Active'),
+    ('Sold', 'Sold'),
+    ('Rejected', 'Rejected'),
+]
 
 FURNISHING_OPTIONS = [
     ('Furnished', 'Furnished'),
@@ -32,33 +41,35 @@ PROPERTY_TYPE = [
 ]
 
 class PropertyListing(models.Model):
-    # Step 1
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name='property_listings',
+        null=True,
+        blank=True,
+    )
+    status = models.CharField(max_length=20, choices=LISTING_STATUS, default='Active')
     title = models.CharField(max_length=255)
     property_type = models.CharField(max_length=50, choices=PROPERTY_TYPE)
-    size_sqft = models.CharField(max_length=100)
+    size_sqft = models.DecimalField(max_digits=10, decimal_places=2)
     bedrooms = models.PositiveIntegerField(null=True, blank=True)
     bathrooms = models.PositiveIntegerField(null=True, blank=True)
     furnishing_status = models.CharField(max_length=50, choices=FURNISHING_OPTIONS, blank=True)
-    price = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=14, decimal_places=2)
 
-    # Step 2
     city = models.CharField(max_length=100)
     locality = models.CharField(max_length=100)
     address = models.TextField()
     pincode = models.CharField(max_length=10)
 
-    # Step 3
     construction_status = models.CharField(max_length=50, choices=CONSTRUCTION_STATUS)
     age_of_property = models.CharField(max_length=50, choices=AGE_OF_PROPERTY)
     floor_number = models.IntegerField()
     total_floors = models.IntegerField()
     parking = models.BooleanField()
 
-    # Step 4 (Media)
     images = models.ImageField(upload_to='property_images/', null=True, blank=True)
-    images = models.ImageField(upload_to='property_images/', null=True, blank=True)
-
-    # Step 5
+    floor_plan = models.ImageField(upload_to='property_floor_plans/', null=True, blank=True)
     seller_name = models.CharField(max_length=100)
     seller_contact = models.CharField(max_length=15)
     seller_email = models.EmailField()
@@ -69,3 +80,12 @@ class PropertyListing(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.city}"
+
+
+class PropertyImage(models.Model):
+    property = models.ForeignKey(
+        PropertyListing,
+        on_delete=models.CASCADE,
+        related_name='gallery',
+    )
+    image = models.ImageField(upload_to='property_images/gallery/')

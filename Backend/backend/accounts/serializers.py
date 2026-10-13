@@ -1,10 +1,10 @@
 from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str, smart_bytes
 from django.utils.encoding import smart_bytes
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 
 from rest_framework import serializers
@@ -26,6 +26,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         if attrs.get("password") != attrs.get("password2"):
             raise serializers.ValidationError("Passwords do not match")
+        validate_password(attrs['password'])
         return attrs
 
     def create(self, validated_data):
@@ -77,20 +78,19 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         fields = ['email']
 
     def validate_email(self, value):
-        if not User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("User with this email does not exist.")
         return value
 
     def save(self):
         email = self.validated_data['email']
-        user = User.objects.get(email=email)
+        user = User.objects.filter(email=email, is_active=True).first()
+        if not user:
+            return
 
         uidb64 = urlsafe_base64_encode(force_bytes(user.id))
         token = PasswordResetTokenGenerator().make_token(user)
         request = self.context.get('request')
-        site_domain = get_current_site(request).domain
         relative_link = reverse('password-reset-confirm', kwargs={'uidb64': uidb64, 'token': token})
-        abslink = f"http://{site_domain}{relative_link}"
+        abslink = request.build_absolute_uri(relative_link)
 
         email_body = f"Hello,\n\nUse the link below to reset your password:\n\n{abslink}"
         data = {
@@ -98,7 +98,6 @@ class PasswordResetRequestSerializer(serializers.Serializer):
             'email_subject': 'Reset your password',
             'to_email': user.email,
         }
-        print("Sending password reset email...")  # ✅ this should print now
         send_normal_email(data)
 
 
@@ -112,6 +111,7 @@ class SetNewPasswordSerializer(serializers.Serializer):
     def validate(self, attrs):
         if attrs['password'] != attrs['confirm_password']:
             raise serializers.ValidationError("Passwords do not match")
+        validate_password(attrs['password'])
         return attrs
 
     def save(self, **kwargs):

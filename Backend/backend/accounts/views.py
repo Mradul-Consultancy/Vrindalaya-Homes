@@ -11,6 +11,7 @@ from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 
 from .serializers import (
     UserRegisterSerializer,
@@ -30,6 +31,8 @@ class RegisterUserView(GenericAPIView):
     Registers a new user and sends an email-verification link.
     """
     serializer_class = UserRegisterSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'register'
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data, context={"request": request})
@@ -96,6 +99,8 @@ class VerifyEmailView(GenericAPIView):
 
 class LoginUserView(GenericAPIView):
     serializer_class = LoginSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'login'
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data, context={"request": request})
@@ -112,6 +117,8 @@ class TestAuthenticationView(GenericAPIView):
 
 class PasswordResetRequestView(GenericAPIView):
     serializer_class = PasswordResetRequestSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'password_reset'
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data, context={'request': request})

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; 
-import axios from 'axios';
+import api from '../../utils/api';
 import './Login.css';
 
 const Login = () => {
@@ -41,12 +41,10 @@ const Login = () => {
     // Login submit handler
     const handleLoginSubmit = async () => {
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/accounts/auth/login/', loginData);
-            localStorage.setItem('access', response.data.access);
-            localStorage.setItem('refresh', response.data.refresh);
+            const response = await api.post('/accounts/auth/login/', loginData);
+            localStorage.setItem('access', response.data.access_token);
+            localStorage.setItem('refresh', response.data.refresh_token);
             alert('Login successful!');
-            localStorage.setItem('access', response.data.access);
-            localStorage.setItem('refresh', response.data.refresh);
             navigate('/'); 
             // Redirect or fetch protected data here
         } catch (error) {
@@ -61,7 +59,7 @@ const Login = () => {
         }
 
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/accounts/auth/register/', signupData);
+            await api.post('/accounts/auth/register/', signupData);
             alert('Signup successful! Please check your email to verify your account.');
             setAuthShow(true); // Switch to login screen after signup
         } catch (error) {
@@ -74,7 +72,7 @@ const Login = () => {
         {authShow ? (
             <div className='LoginMainDiv'>
                 <div className="Loginleft">
-                    <div className="CompanyTitle">Banke Bihari Group</div>
+                    <div className="CompanyTitle">Vrindalaya Homes</div>
                     <div className="logintitle">Login to Your Account</div>
                     <div className="loginDetail">
                         <input

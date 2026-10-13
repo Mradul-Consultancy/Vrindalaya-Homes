@@ -1,0 +1,106 @@
+.MyListingsPage {
+    min-height: 100vh;
+    background: #f5f7fa;
+    color: #292b2c;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.MyListingsPage > header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 32px;
+    background: #292b2c;
+}
+
+.MyListingsPage > header a {
+    color: white;
+    text-decoration: none;
+    margin-left: 16px;
+}
+
+.MyListingsPage > section {
+    max-width: 960px;
+    margin: 32px auto;
+    padding: 0 20px;
+}
+
+.MyListingCard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin: 16px 0;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px #00000012;
+}
+
+.MyListingCard h2,
+.MyListingCard p {
+    margin: 8px 0;
+}
+
+.MyListingActions {
+    display: flex;
+    gap: 10px;
+}
+
+.MyListingEdit {
+    display: grid;
+    gap: 10px;
+    min-width: min(100%, 420px);
+}
+
+.MyListingEdit label {
+    display: grid;
+    gap: 4px;
+}
+
+.MyListingEdit input,
+.MyListingEdit textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px;
+    border: 1px solid #cbd2d9;
+    border-radius: 5px;
+}
+
+.MyListingActions button {
+    padding: 9px 14px;
+    border: 0;
+    border-radius: 5px;
+    background: #554bd8;
+    color: white;
+    cursor: pointer;
+}
+
+.MyListingsPagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin: 24px 0;
+}
+
+.MyListingsPagination button {
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 5px;
+    background: #554bd8;
+    color: white;
+    cursor: pointer;
+}
+
+.MyListingsPagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+    .MyListingCard {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import BackgroundVideo from '../../assets/BackgroundVideo.webm';
+import BackgroundVideo from '../../assets/BackgroundVideo.mp4';
+import BackgroundVideoPoster from '../../assets/BackgroundVideoPoster.webp';
 import './Home.css';
 import Project from './Project';
 import AboutGroup from './AboutGroup';
@@ -10,23 +11,25 @@ const Home = () => {
     const navigate = useNavigate();
     const [show, setShow] = useState(false);
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
+    const isAuthenticated = Boolean(localStorage.getItem('access'));
     
     const textslide = [
         {
-            subtitle: 'Leading Real Estate Company',
-            title: 'IN THE NATION',
+            subtitle: 'Explore local property listings',
+            title: 'IN VRINDAVAN',
         },
         {
-            subtitle: 'Banke Bihari Group',
-            title: 'NOW #1 IN THE VRINDAVAN',
+            subtitle: 'Vrindalaya Homes',
+            title: 'VRINDAVAN & MATHURA',
         },
         {
-            subtitle: '#1 Large Team * in',
-            title: 'INDIA',
+            subtitle: 'Find a place that fits your needs',
+            title: 'EXPLORE PROPERTIES',
         },
         {
-            subtitle: '#1 Large Team * in',
-            title: 'MATHURA,UTTAR PRADESH',
+            subtitle: 'Ready to make a move?',
+            title: 'BUY OR SELL LOCALLY',
         },
     ];
      const handleSellClick = () => {
@@ -48,17 +51,44 @@ const Home = () => {
         return () => clearInterval(interval);
     }, [textslide.length]);
 
+    useEffect(() => {
+        const connection = navigator.connection;
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const isSlowConnection = connection?.saveData
+            || ['slow-2g', '2g', '3g'].includes(connection?.effectiveType);
+
+        if (prefersReducedMotion || isSlowConnection) return undefined;
+
+        let timer;
+        const scheduleVideo = () => {
+            timer = window.setTimeout(() => setShouldLoadVideo(true), 1500);
+        };
+
+        if (document.readyState === 'complete') {
+            scheduleVideo();
+        } else {
+            window.addEventListener('load', scheduleVideo, { once: true });
+        }
+
+        return () => {
+            window.removeEventListener('load', scheduleVideo);
+            window.clearTimeout(timer);
+        };
+    }, []);
+
     return (
         <div className='MainHome'>
             {/* Hero Section with Video Background */}
             <div className="hero-section">
                 <div className="background">
                     <video
-                        src={BackgroundVideo}
-                        autoPlay
+                        src={shouldLoadVideo ? BackgroundVideo : undefined}
+                        poster={BackgroundVideoPoster}
+                        autoPlay={shouldLoadVideo}
                         loop
                         muted
                         playsInline
+                        preload="none"
                         className="background-video"
                     />
                 </div>
@@ -66,7 +96,7 @@ const Home = () => {
                     <div className="navbar">
                         <div className="left-part">
                             <div className='logo'>
-                                <Link to="/">Banke Bihari Group</Link>
+                                <Link to="/">Vrindalaya Homes</Link>
                             </div>
                         </div>
                         <div className="right-part-desktop">
@@ -77,12 +107,13 @@ const Home = () => {
                                 <li className="li-2">
                                      <div onClick={handleSellClick} className='Sellbtn'>Sell</div>
                                 </li>
+                                {isAuthenticated && <li><Link to="/my-listings">My listings</Link></li>}
                                 <li className="li-3">
-                                    <Link to="/login">Login</Link>
+                                    <Link to={isAuthenticated ? "/my-listings" : "/login"}>{isAuthenticated ? 'My Account' : 'Login'}</Link>
                                 </li>
-                                <li className="li-4">
+                                {!isAuthenticated && <li className="li-4">
                                     <Link to="/login">SignUp</Link>
-                                </li>
+                                </li>}
                                 
                             </ul>
                         </div>
@@ -99,6 +130,7 @@ const Home = () => {
                             <li className="li-2" onClick={()=>setShow(false)}>
                                  <button onClick={handleSellClick}>Sell</button>
                             </li>
+                            {isAuthenticated && <li onClick={()=>setShow(false)}><Link to="/my-listings">My listings</Link></li>}
                             <li className="li-3" onClick={()=>setShow(false)}>
                                 <Link to="/login">Login</Link>
                             </li>

@@ -1,288 +1,356 @@
-# 🏠 Banke Bihari Group — Real Estate Platform
+# 🏡 Vrindalaya Homes — Modern AI-Driven Real Estate Platform
 
-> A full-stack real estate web platform for buying and selling properties, built for the Vrindavan/Mathura region of Uttar Pradesh, India.
+> *"Find Your Sanctuary in the Holy City."*
 
----
-
-## 🚀 Live Demo
-
-| Service   | URL                          |
-|-----------|------------------------------|
-| Frontend  | `http://localhost:5173`      |
-| Backend   | `http://localhost:8000`      |
-| Admin     | `http://localhost:8000/admin`|
-
----
-
-## 🧱 Tech Stack
-
-| Layer      | Technology                                      |
-|------------|-------------------------------------------------|
-| Frontend   | React 19, React Router v7, Axios, Vite 7        |
-| Backend    | Django 5.2, Django REST Framework 3.16          |
-| Auth       | JWT (SimpleJWT) + Email Verification            |
-| Database   | MySQL                                           |
-| Storage    | Cloudinary (images & files)                     |
-| Email      | Gmail SMTP                                      |
-| Package Mgr| `uv` (Python), `npm` (Node)                     |
+<p align="center">
+  <img src="https://img.shields.io/badge/Django-5.2-092E20?style=for-the-badge&logo=django&logoColor=white" alt="Django" />
+  <img src="https://img.shields.io/badge/Django_REST-3.16-red?style=for-the-badge&logo=django&logoColor=white" alt="DRF" />
+  <img src="https://img.shields.io/badge/React-19.1-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
+  <img src="https://img.shields.io/badge/Vite-7.3-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
+  <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+  <img src="https://img.shields.io/badge/Test_Suite-Passing-success?style=for-the-badge&logo=pytest&logoColor=white" alt="Tests" />
+</p>
 
 ---
 
-## ✨ Features
+## 📖 Executive Summary
 
-### Authentication
-- Register with email + password
-- Email verification (24-hour token)
-- JWT login/logout with refresh token blacklist
-- Password reset via email link
+The **Vrindalaya Homes Real Estate Platform** is a full-stack, production-engineered real estate web application designed specifically for property discovery, valuation, and listing management in the Vrindavan–Mathura pilgrimage & residential corridor (Uttar Pradesh, India).
 
-### Property Listings
-- Multi-step sell form (5 steps: Info → Location → Features → Photos → Seller)
-- Browse all listings with image cards
-- Detailed property view (size, floors, parking, age, contact)
-- Seller contact reveal (phone + email toggle)
-- Protected sell route (login required)
-
-### Home Page
-- Video background hero section
-- Auto-rotating text carousel
-- Project showcase section
-- Company about section
-- Mobile-responsive hamburger menu
+The system pairs a **React 19 single-page client** with a robust **Django REST Framework (DRF)** backend, offering:
+- Multi-tier JWT token authentication with email verification.
+- Controlled 5-step seller listing onboarding with administrative moderation workflows.
+- Public property inventory search with multi-parameter filtering and pagination.
+- **AI-assisted automated valuation model (AVM)** for real-time market price estimation.
+- Comprehensive end-to-end test coverage across both frontend (Vitest + JSDOM) and backend (Pytest + Django Test Runner).
 
 ---
 
-## 📁 Project Structure
+## 📸 Application Previews & Screenshots
 
+<p align="center">
+  <b>🌐 Hero Landing Page</b>
+  <br>
+  <img src="docs/screenshots/homepage.png" alt="Homepage" width="95%" />
+</p>
+
+<p align="center">
+  <b>🔍 Property Catalog & Search with Filter Controls</b>
+  <br>
+  <img src="docs/screenshots/buypage.png" alt="Property Listings" width="95%" />
+</p>
+
+<table align="center" width="100%">
+  <tr>
+    <td align="center" width="50%">
+      <b>🏡 Property Detail & Specifications</b><br>
+      <img src="docs/screenshots/property-detail.png" alt="Property Detail View" width="100%" />
+    </td>
+    <td align="center" width="50%">
+      <b>🔐 Secure Authentication Portal</b><br>
+      <img src="docs/screenshots/login.png" alt="Login & Sign Up Portal" width="100%" />
+    </td>
+  </tr>
+</table>
+
+---
+
+## 🏛️ High-Level System Architecture
+
+```mermaid
+flowchart TD
+    subgraph Client ["Client Layer (Frontend)"]
+        UI["React 19 SPA (Vite 7)"]
+        Router["React Router v7"]
+        AxiosClient["Axios HTTP Client + Interceptors"]
+        UI --> Router
+        Router --> AxiosClient
+    end
+
+    subgraph Gateway ["Networking & Gateway"]
+        CORS["CORS & CSRF Middleware"]
+        Throttle["DRF Rate Limiters (Anon: 120/h, Auth: 1200/h)"]
+        JWTAuth["SimpleJWT Authentication (Bearer Token)"]
+    end
+
+    subgraph Backend ["Application Layer (Django 5.2 / DRF)"]
+        subgraph Apps ["Django Applications"]
+            AccountsApp["accounts (User, Auth, Token, Reset)"]
+            PropertyApp["PostProperty (Listings, Filters, Media)"]
+            AIApp["ai (Price Prediction Engine / AVM)"]
+        end
+    end
+
+    subgraph Data ["Data & Storage Layer"]
+        DB[("Relational DB: SQLite / MySQL")]
+        Cloudinary[("Cloudinary Cloud Storage (Images/Plans)")]
+        SMTP["Gmail SMTP Service (Verification & Resets)"]
+    end
+
+    AxiosClient -->|HTTP / JSON| CORS
+    CORS --> Throttle
+    Throttle --> JWTAuth
+    JWTAuth --> Apps
+
+    AccountsApp -->|User & Credentials| DB
+    AccountsApp -->|Transactional Emails| SMTP
+    PropertyApp -->|Property Records & Metadata| DB
+    PropertyApp -->|Media Uploads| Cloudinary
+    AIApp -->|Valuation Formulas / Historical Trends| DB
 ```
+
+### Component Details
+1. **Frontend (Presentation Tier)**:
+   - React 19 with route-level code splitting (`React.lazy` & `Suspense`).
+   - Clean separation of concerns between authentication contexts, authenticated routes (`RequireAuth`), listing workflows, and public search.
+2. **Backend (Application Tier)**:
+   - Stateless REST API protected by JSON Web Tokens (`access` + auto-rotated `refresh` with blacklisting).
+   - Granular authorization gates: Public access for browsing, verified user tokens required for publishing, admin moderation required before listings go live.
+3. **AI Valuation Micro-Engine**:
+   - Accepts geospatial coordinates, structural characteristics, property age, furnishing grade, and size.
+   - Calculates baseline property valuations and market range bands (`min`, `max`, `confidence`).
+
+---
+
+## 🛠️ Tech Stack & Tooling
+
+| Component | Technology | Rationale |
+| :--- | :--- | :--- |
+| **Frontend Framework** | React 19 + Vite 7 | Lightning-fast HMR builds, concurrent rendering capabilities |
+| **Routing** | React Router v7 | Dynamic client-side routing with guarded access controls |
+| **Backend API** | Django 5.2 + Django REST Framework | Batteries-included, ORM safety, built-in validation & admin tooling |
+| **Authentication** | SimpleJWT (`djangorestframework-simplejwt`) | Secure token rotation, zero server-session storage bottleneck |
+| **Package Management** | `uv` (Python) & `npm` (Node) | `uv` delivers 10–100x faster virtual environment and lockfile resolution |
+| **Database** | SQLite (Dev) / MySQL or PostgreSQL (Prod) | Configurable via environment engine toggle (`DB_ENGINE`) |
+| **Media Management** | Cloudinary & `django-cloudinary-storage` | Offloaded image resizing, optimization, and reliable CDN delivery |
+| **Backend Testing** | `pytest`, `pytest-django`, Django `APITestCase` | Fast, fixture-driven testing for endpoints and model invariants |
+| **Frontend Testing** | `vitest`, `@testing-library/react`, `jsdom` | Native Vite integration with full DOM emulation |
+| **Containerization** | Docker & Docker Compose | Multi-container reproducible environments |
+
+---
+
+## 📂 Repository Directory Layout
+
+```text
 Real-Estate/
-├── backend/
-│   ├── backend/
-│   │   ├── accounts/          # Auth: register, login, verify, reset
-│   │   ├── PostProperty/      # Property CRUD
-│   │   └── backend/           # Django settings, URLs, WSGI
-│   ├── pyproject.toml
-│   └── uv.lock
-└── frontend/
+├── docker-compose.yml              # Multi-container orchestration (Web + Frontend + DB)
+├── README.md                       # Comprehensive project documentation
+│
+├── Backend/                        # Django REST API root
+│   ├── pyproject.toml              # Modern Python dependency specifications
+│   ├── uv.lock                     # Deterministic dependency lockfile
+│   ├── pytest.ini                  # Pytest runner configuration
+│   ├── Dockerfile                  # Production container definition for backend
+│   └── backend/                    # Django project core
+│       ├── manage.py               # Django task runner CLI
+│       ├── .env                    # Active local environment variables
+│       ├── backend/                # Project configurations (settings, wsgi, urls)
+│       ├── accounts/               # Custom user model, token auth, mail tokens
+│       ├── PostProperty/           # Property listings, image relations, moderation
+│       └── ai/                     # AI valuation engine, serializers, endpoints
+│
+└── frontend/                       # React client root
+    ├── package.json                # Frontend dependencies and run scripts
+    ├── vite.config.js              # Vite bundler & Vitest test harness setup
+    ├── Dockerfile                  # Container definition for frontend client
     ├── src/
+    │   ├── App.jsx                 # Top-level routing & Suspense fallback
+    │   ├── setupTests.js           # Vitest environment mocks (JSDOM, matchMedia)
+    │   ├── __tests__/              # Automated React component and integration tests
     │   ├── Components/
-    │   │   ├── Auth/           # Login + Signup
-    │   │   ├── Buy/            # BuyPage + PropertyDetail
-    │   │   ├── Home/           # Home, Project, AboutGroup
-    │   │   └── Sell/           # Multi-step SellPage
-    │   ├── utils/
-    │   │   └── RequireAuth.jsx
-    │   └── App.jsx
-    └── package.json
+    │   │   ├── Auth/               # Login, Signup, Password Reset UI
+    │   │   ├── Buy/                # Property catalogue, search, details modal
+    │   │   ├── Home/               # Landing page, hero showcase, about section
+    │   │   └── Sell/               # Multi-step listing onboarding wizard
+    │   └── utils/                  # Auth guards, HTTP helpers
 ```
 
 ---
 
-## ⚙️ Setup & Run
+## ⚡ Quick Start & Setup Guide
 
 ### Prerequisites
-- [uv](https://docs.astral.sh/uv/) (Python package manager)
-- Node.js 18+
-- MySQL running locally
+- **Python 3.10+** and [uv](https://docs.astral.sh/uv/) (Recommended) or standard `pip`
+- **Node.js 18+** & `npm`
+- *(Optional)* Docker Desktop (if running via container orchestration)
 
-### 1. Clone the repo
+---
+
+### 1. Backend Setup
+
 ```bash
-git clone https://github.com/your-username/real-estate.git
-cd real-estate
-```
+# Navigate to Backend folder
+cd Backend
 
-### 2. Backend Setup
+# Sync Python dependencies using uv
+uv sync
 
-Create `backend/backend/.env`:
-```env
-SECRET_KEY=your-django-secret-key
-DEBUG=True
-CLOUD_NAME=your_cloudinary_cloud_name
-CLOUD_API_KEY=your_cloudinary_api_key
-CLOUD_API_SECRET=your_cloudinary_api_secret
-EMAIL_HOST_USER=your_gmail@gmail.com
-EMAIL_HOST_PASSWORD=your_gmail_app_password
-```
-
-Create MySQL database:
-```sql
-CREATE DATABASE realestate;
-```
-
-Run migrations and start server:
-```bash
-cd backend
+# Run database migrations
 uv run python backend/manage.py migrate
-uv run python backend/manage.py runserver
+
+# (Optional) Seed demo property listings
+uv run python backend/manage.py seed_demo
+
+# Start the Django development server (HTTP 127.0.0.1:8000)
+uv run python backend/manage.py runserver 127.0.0.1:8000
 ```
 
-### 3. Frontend Setup
+> **Default Superuser**:
+> - Email: `admin@example.com`
+> - Password: `admin123`
+> - Admin URL: `http://localhost:8000/admin`
+
+---
+
+### 2. Frontend Setup
+
 ```bash
+# Open a new terminal in frontend directory
 cd frontend
+
+# Install dependencies
 npm install
+
+# Start the Vite development server (http://localhost:5173)
 npm run dev
 ```
 
 ---
 
-## 🔌 API Reference
+### 3. Docker Compose (Alternative)
 
-### Auth Endpoints — `/api/accounts/`
-
-| Method | Endpoint                                      | Description              |
-|--------|-----------------------------------------------|--------------------------|
-| POST   | `auth/register/`                              | Register new user        |
-| GET    | `auth/verify-email/<token>/`                  | Verify email             |
-| POST   | `auth/login/`                                 | Login → JWT tokens       |
-| POST   | `auth/logout/`                                | Logout (blacklist token) |
-| POST   | `auth/password-reset/request/`                | Request password reset   |
-| GET    | `auth/password-reset/confirm/<uid>/<token>/`  | Validate reset token     |
-| PATCH  | `auth/password-reset/setnewpassword/`         | Set new password         |
-
-### Property Endpoints — `/api/property/`
-
-| Method | Endpoint              | Description              | Auth Required |
-|--------|-----------------------|--------------------------|---------------|
-| GET    | `buy/`                | List all properties      | No            |
-| POST   | `sell/`               | Create property listing  | Yes           |
-| GET    | `property/<id>/`      | Get property detail      | No            |
-
----
-
-## 🗺️ Roadmap
-
-### ✅ Phase 1 — Core (Done)
-- [x] User auth with JWT + email verification
-- [x] Multi-step property listing form
-- [x] Property browse + detail view
-- [x] Cloudinary image uploads
-- [x] Mobile-responsive navbar
-
-### 🔄 Phase 2 — Enhancements (In Progress)
-- [ ] Search & filter (city, type, price range, bedrooms)
-- [ ] User dashboard (my listings, edit/delete)
-- [ ] Property status (Active / Sold / Under Review)
-- [ ] Pagination on listings
-- [ ] Dark/Light theme toggle
-
-### 🤖 Phase 3 — AI & ML Features
-- [ ] **Price Prediction** — ML model (Random Forest / XGBoost) trained on listing data to estimate fair market value
-- [ ] **AI Chatbot** — Conversational assistant for property queries, powered by a fine-tuned LLM or Gemini/OpenAI API
-- [ ] **Smart Recommendations** — Suggest similar properties based on user browsing history
-- [ ] **Image Quality Check** — Auto-flag blurry or low-quality property images on upload
-
-### 📱 Phase 4 — Mobile App
-- [ ] React Native app (iOS + Android)
-- [ ] Push notifications for new listings
-- [ ] In-app messaging between buyer and seller
-- [ ] Map view with property pins
-
-### 🚀 Phase 5 — Deployment
-- [ ] Dockerize backend + frontend
-- [ ] Deploy backend on Railway / Render
-- [ ] Deploy frontend on Vercel / Netlify
-- [ ] Switch to PostgreSQL for production
-- [ ] CI/CD pipeline with GitHub Actions
-
----
-
-## 🤖 AI Chatbot — Planned Architecture
-
-```
-User Message
-     │
-     ▼
-React Chat Widget (frontend)
-     │
-     ▼
-POST /api/chat/  (Django endpoint)
-     │
-     ▼
-LLM API (Gemini / OpenAI)
-  + Context: property listings from DB
-     │
-     ▼
-Streamed Response → Chat UI
-```
-
-The chatbot will be able to:
-- Answer questions about listed properties
-- Help users narrow down their search
-- Explain the buying/selling process
-- Provide price estimates using the ML model
-
----
-
-## 📊 ML Price Prediction — Planned Architecture
-
-```
-Training Data: PropertyListing records
-     │
-     ▼
-Feature Engineering
-  (city, locality, size_sqft, bedrooms,
-   bathrooms, age, floor, parking, type)
-     │
-     ▼
-Model: Random Forest / XGBoost
-     │
-     ▼
-Saved as .pkl → Django API endpoint
-     │
-     ▼
-GET /api/predict-price/?city=...&size=...
-     │
-     ▼
-Returns: { "estimated_price": "₹45,00,000" }
+To build and spin up the complete isolated environment:
+```bash
+docker compose up --build
 ```
 
 ---
 
-## 📱 Mobile App — Planned Stack
+## 🔌 Core API Specifications
 
-| Layer      | Technology                    |
-|------------|-------------------------------|
-| Framework  | React Native (Expo)           |
-| Navigation | React Navigation              |
-| State      | Zustand / Redux Toolkit       |
-| API        | Same Django REST backend      |
-| Maps       | React Native Maps             |
-| Push Notif | Expo Notifications            |
+### 🔐 Authentication (`/api/accounts/`)
+| Method | Endpoint | Description | Auth Required |
+|:---|:---|:---|:---:|
+| `POST` | `/api/accounts/auth/register/` | Register user account & dispatch email verification | No |
+| `GET` | `/api/accounts/auth/verify-email/<token>/` | Verify user email token | No |
+| `POST` | `/api/accounts/auth/login/` | Authenticate user & return JWT access/refresh pair | No |
+| `POST` | `/api/accounts/auth/logout/` | Blacklist current refresh token | Yes |
+| `POST` | `/api/accounts/auth/token/refresh/` | Obtain fresh access token via refresh token | No |
+| `POST` | `/api/accounts/auth/password-reset/request/` | Trigger reset link to user's registered inbox | No |
+
+### 🏡 Properties (`/api/property/`)
+| Method | Endpoint | Description | Auth Required |
+|:---|:---|:---|:---:|
+| `GET` | `/api/property/buy/` | Paginated search of approved properties (Filters: `city`, `price`, `bedrooms`, etc.) | No |
+| `POST` | `/api/property/sell/` | Submit new property for admin verification | Yes |
+| `GET` | `/api/property/property/<id>/` | View public specifications of single property | No |
+| `GET` | `/api/property/property/<id>/contact/` | Reveal owner contact details (phone, email) | Yes |
+| `GET` | `/api/property/mine/` | List all properties submitted by currently logged-in user | Yes |
+| `PATCH` | `/api/property/mine/<id>/` | Edit listing (automatically puts status back to 'Under Review') | Yes |
+| `POST` | `/api/property/mine/<id>/sold/` | Mark active property as Sold | Yes |
+
+### 🤖 AI Valuation Engine (`/api/ai/`)
+| Method | Endpoint | Description | Auth Required |
+|:---|:---|:---|:---:|
+| `POST` | `/api/ai/predict/` | Automated valuation model calculating predicted property price | No |
+
+#### Sample AI Prediction Request:
+```bash
+curl -X POST http://127.0.0.1:8000/api/ai/predict/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "property_type": "House",
+    "city": "Vrindavan",
+    "locality": "Raman Reti",
+    "size_sqft": 1200,
+    "bedrooms": 3,
+    "bathrooms": 2,
+    "age_of_property": "New",
+    "furnishing_status": "Semi-Furnished",
+    "parking": true
+  }'
+```
+
+#### Sample AI Prediction Response:
+```json
+{
+  "estimated_price": "6140000.00",
+  "confidence": "low",
+  "comparable_range": {
+    "min": "5219000.00",
+    "max": "7061000.00"
+  },
+  "note": "This is a rule-based stub estimate. A trained ML model will replace this once sufficient listing data is collected."
+}
+```
 
 ---
 
-## 🔐 Environment Variables
+## 🧪 Automated Testing
 
-| Variable           | Description                        |
-|--------------------|------------------------------------|
-| `SECRET_KEY`       | Django secret key                  |
-| `DEBUG`            | `True` for dev, `False` for prod   |
-| `CLOUD_NAME`       | Cloudinary cloud name              |
-| `CLOUD_API_KEY`    | Cloudinary API key                 |
-| `CLOUD_API_SECRET` | Cloudinary API secret              |
-| `EMAIL_HOST_USER`  | Gmail address for sending emails   |
-| `EMAIL_HOST_PASSWORD` | Gmail App Password              |
+Both tiers include dedicated unit and integration testing pipelines to prevent regressions:
 
----
+### 🐍 Backend Test Suite (Pytest)
+```bash
+cd Backend
+uv run pytest
+```
+*Current test suite: **17 passed** covering authentication flows, permissions, property boundaries, and AI valuation algorithms.*
 
-## 🤝 Contributing
-
-1. Fork the repo
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Commit your changes: `git commit -m 'Add some feature'`
-4. Push to the branch: `git push origin feature/your-feature`
-5. Open a Pull Request
+### ⚛️ Frontend Test Suite (Vitest)
+```bash
+cd frontend
+npm test
+```
+*Current test suite: **3 passed** covering route loading fallbacks, navbar actions, and core UI rendering.*
 
 ---
 
-## 📄 License
+## 🚀 Recommended Roadmap & What Needs to Be Included
 
-MIT License — feel free to use, modify, and distribute.
+To transform this platform into an industry-grade, venture-ready real estate ecosystem, we recommend prioritizing the following architectural enhancements:
+
+```mermaid
+timeline
+    title Feature Evolution Roadmap
+    section Milestone 1 (Immediate)
+        Interactive Map Search : Leaflet / Mapbox tile integration with geo-bounding queries
+        In-App Chat : WebSocket (Django Channels) between Buyer and Seller
+    section Milestone 2 (Intelligence)
+        Trained ML Model : Gradient Boosting (XGBoost/LightGBM) trained on regional registry records
+        AI Virtual Assistant : RAG chatbot powered by OpenAI / Google Gemini with listing context
+    section Milestone 3 (Enterprise)
+        Document Verification : OCR analysis of registry and deed papers
+        Escrow & Tokenization : Payment gateway integration (Razorpay / Stripe) for booking tokens
+```
+
+### 1. Geospatial & Visual Search
+- **Interactive Map Search**: Integrate Leaflet / Mapbox with OpenStreetMap layers so users can draw bounding boxes or search by proximity to key landmarks (e.g., Banke Bihari Temple, Prem Mandir, Highway NH-19).
+- **Virtual 360° Tours**: Allow sellers to upload equirectangular panorama photos rendered in-browser using Three.js or Pannellum.
+
+### 2. Upgraded AI & Automation Capabilities
+- **Trained ML Models**: Replace the rule-based valuation stub with an XGBoost/LightGBM regressor trained on real historical registry deeds and localized sale benchmarks.
+- **RAG-Powered AI Property Advisor**: Embed listings in a vector database (e.g., pgvector / Pinecone) and deploy an LLM chatbot capable of answering questions like: *"Which 2-bedroom flats in Raman Reti have parking under ₹50 Lakhs?"*.
+- **Computer Vision Quality Check**: Automatically screen uploaded property photos to detect duplicates, flag low-resolution/blurry images, and blur out sensitive personal info before publishing.
+
+### 3. Direct Engagement & Security
+- **Real-Time Messaging**: Add Django Channels (WebSockets) + Redis to support buyer-to-seller live chats without exposing personal phone numbers directly on the open web.
+- **Automated Document Verification**: OCR pipeline to scan Khatauni / Registry deeds and cross-check ownership legitimacy, creating a "Verified Badge" for trustworthy listings.
 
 ---
 
-## 👨‍💻 Built By
+## 🔒 Security Best Practices for Production
 
-**Banke Bihari Group** — Real Estate, Vrindavan, Uttar Pradesh, India.
+When preparing for live cloud deployment (AWS, GCP, Railway, or DigitalOcean):
+1. **Environment Separation**: Switch `DEBUG=False` and supply high-entropy `SECRET_KEY` and specific `ALLOWED_HOSTS` values.
+2. **Database Migration**: Switch from SQLite to managed PostgreSQL or MySQL with connection pooling.
+3. **SSL / HSTS Enforcement**: Enable `SECURE_SSL_REDIRECT = True` behind an Nginx reverse proxy with automated Let's Encrypt certificates.
+4. **CORS Whitelisting**: Restrict `CORS_ALLOWED_ORIGINS` strictly to your production domain (e.g., `https://vrindalayahomes.com`).
 
-> "Our Client Satisfaction is Our Priority"
+---
+
+## 👥 Authors & Maintainers
+
+- **Vrindalaya Homes Tech Team** — *Vrindavan, Uttar Pradesh, India*
+- **License**: MIT License
