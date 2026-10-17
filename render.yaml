@@ -7,8 +7,8 @@ services:
     name: realestate-backend
     runtime: python
     rootDir: backend
-    buildCommand: "uv sync --frozen && uv run python backend/manage.py migrate --noinput && uv run python backend/manage.py collectstatic --noinput"
-    startCommand: "uv run gunicorn --chdir backend backend.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120"
+    buildCommand: "uv sync --frozen --python 3.12 && uv run --python 3.12 python backend/manage.py migrate --noinput && uv run --python 3.12 python backend/manage.py collectstatic --noinput"
+    startCommand: "uv run --python 3.12 gunicorn --chdir backend backend.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120"
     plan: free
     healthCheckPath: /api/property/buy/
     envVars:
